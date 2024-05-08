@@ -28,7 +28,6 @@ bot = BotTelegram()
 
 class MessageRequest(BaseModel):
     message: str
-    token: str = Field(..., title="Authorization", description="Token required for authorization")
 
 
 @app.get("/", include_in_schema=False)
@@ -47,9 +46,12 @@ async def send_message(message_request: MessageRequest, token: str = Header(None
         if token is None:
             raise HTTPException(status_code=400, detail="Token is missing. Please provide the token in the request headers.")
         
-        if token != bot.get_token():
+        elif token != bot.get_token():
             raise HTTPException(status_code=401, detail="Unauthorized")
-
+        
+        elif token == bot.get_token():
+            return await bot.message(message_request.message)
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
